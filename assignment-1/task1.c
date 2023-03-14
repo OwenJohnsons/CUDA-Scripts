@@ -1,5 +1,7 @@
 /*
-Code Purpose: Create an single precision floating point n x m matrix. N and M are command line arguments. 
+Code Purpose: Create an single precision floating point n x m matrix with values between -5 and 5. N and M are command line arguments for size of the matrix. 
+Author: Owen A. Johnson
+Date: 03/03/2023
 */
 
 #include <stdio.h>
@@ -8,11 +10,11 @@ Code Purpose: Create an single precision floating point n x m matrix. N and M ar
 
 int main(int argc, char *argv[])
 {
-    // int n = atoi(argv[1]);
+    // int n = atoi(argv[1]); // sizes of the matrix specified by command line arguments
     // int m = atoi(argv[2]);
 
-    int n = 1000;
-    int m = 1000;
+    int n = 10;
+    int m = 10;
     
     float *matrix = (float *)malloc(n * m * sizeof(float));
     srand(time(0));
@@ -20,7 +22,7 @@ int main(int argc, char *argv[])
     {
         for (int j = 0; j < m; j++)
         {
-            matrix[i * m + j] = (float)rand() / (float)(RAND_MAX / 100);
+            matrix[i * m + j] = ((float)(drand48())*10.0)-5.0; // Random value between -5 and 5
         }
     }
     FILE *fp;
