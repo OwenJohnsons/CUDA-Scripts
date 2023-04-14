@@ -23,6 +23,8 @@ void cli_flags(){
     printf("\t -m: Radiator Height\n");
     printf("\t -verbose: Display debug information\n");
     printf("\t -cpu: Complete computation on the CPU\n");
+    printf("\t -gpu: Complete computation on the GPU\n");
+    printg("\t -t: Time the simulation\n");
 }
 
 /* 
@@ -46,6 +48,12 @@ void cli_args(int argc, char *argv[], int *n, int *m, int *verbose, int *cpu){
         }
         else if(strcmp(argv[i], "-cpu") == 0){
             *cpu = 1;
+        }
+        else if(strcmp(argv[i], "-gpu") == 0){
+            *gpu = 1;
+        }
+        else if(strcmp(argv[i], "-t") == 0){
+            *t = 1;
         }
     }
 }
@@ -102,6 +110,20 @@ void cpu_calculation(){
         printf("Copying initial radiator matrix to previous radiator matrix.");
     memcpy(previous_radiator, intial_radiator, m * n * sizeof(float));
     memcpy(current_radiator, intial_radiator, m * n * sizeof(float));
+
+    // CPU calculation and simulation 
+    if verbose == 1:
+        printf("Starting CPU calculation and simulation.");
+}
+
+void radiator_weighting(float** previousMatrix, float** nextMatrix, int m, int n){
+    // TODO
+    for (int i = 0; i < m; i++){
+        for (int j = 0; j < n; j++){
+            (*nextMatrix)[i * n + j] = ( (1.65*(*previousMatrix)[i * rowLength + (j - 2)])+(1.35*(*previousMatrix)[i * rowLength + (j - 1)])+ (*previousMatrix)[i * rowLength + j]+ (0.65*(*previousMatrix)[i * rowLength + ((j + 1) % rowLength)])+(0.35*(*previousMatrix)[i * rowLength + ((j + 2) % rowLength)])) / (float)(5.0);
+        }
+    }
+
 }
 
 void main(int argc, char *argv[]){
