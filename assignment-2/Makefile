@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall
+CFLAGS = -Wall -g
 
 SRCDIR = ./code
 SOURCE = $(SRCDIR)/radiator_main.c
