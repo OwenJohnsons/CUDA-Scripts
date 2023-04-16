@@ -6,12 +6,21 @@ Date of last major update: 13/04/2023
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 #include <time.h>
 
 
 // Function prototypes
 
+void cli_flags();
+void cli_args(int argc, char *argv[], int *n, int *m, int *verbose, int *cpu); 
+void create_radiator(int m, int n);
+void cpu_calculation(int m, int n, float* intial_radiator, int iterations);
+void radiator_weighting(float** previousMatrix, float** nextMatrix, int m, int n);
+void row_average(float** matrix, float **array, int m, int n); 
+
+int n = 0, m = 0, verbose = 0, cpu = 0, iterations = 0; // Global variables for command line arguments
 
 /*
 Command line arguments
@@ -24,7 +33,16 @@ void cli_flags(){
     printf("\t -verbose: Display debug information\n");
     printf("\t -cpu: Complete computation on the CPU\n");
     printf("\t -gpu: Complete computation on the GPU\n");
-    printg("\t -t: Time the simulation\n");
+    printf("\t -t: Time the simulation\n");
+    printf("\t -i: Number of iterations to run the simulation for\n");
+}
+
+/* 
+Main Function
+*/
+void main(int argc, char *argv[]){
+    cli_args(argc, argv, &n, &m, &verbose, &cpu);
+    create_radiator(m, n);
 }
 
 /* 
@@ -38,22 +56,25 @@ void cli_args(int argc, char *argv[], int *n, int *m, int *verbose, int *cpu){
             exit(0);
         }
         else if(strcmp(argv[i], "-n") == 0){
-            *n = atoi(argv[i+1]);
+           int n = atoi(argv[i+1]);
         }
         else if(strcmp(argv[i], "-m") == 0){
-            *m = atoi(argv[i+1]);
+            int m = atoi(argv[i+1]);
         }
         else if(strcmp(argv[i], "-verbose") == 0){
-            *verbose = 1;
+            int verbose = 1;
         }
         else if(strcmp(argv[i], "-cpu") == 0){
-            *cpu = 1;
+            int cpu = 1;
         }
         else if(strcmp(argv[i], "-gpu") == 0){
-            *gpu = 1;
+            int gpu = 1;
         }
         else if(strcmp(argv[i], "-t") == 0){
-            *t = 1;
+            int t = 1;
+        }
+        else if(strcmp(argv[i], "-i") == 0){
+            int iterations = atoi(argv[i+1]);
         }
     }
 }
@@ -62,23 +83,26 @@ void cli_args(int argc, char *argv[], int *n, int *m, int *verbose, int *cpu){
 Creating the radiator matrix given m and n values
 */
 void create_radiator(int m, int n){
-    if verbose == 1:
+    if (verbose == 1){
         printf("Creating radiator matrix of size %d x %d", m, n);
+    }
 
     int i, j;
     float* intial_radiator;
     intial_radiator = (float *)malloc(m * n * sizeof(float)); // Allocate memory for the radiator matrix
     for (int i = 0; i < m; i++){// creating array as per the assignment specification 
         intial_radiator[i*n] = 1*(float)(i+1)/(float)(m);
-        intial_radiator[i*n + n + 1] = 0.7*float(i+1)/float(m);
+        intial_radiator[i*n + n + 1] = 0.7 * (float) (i + 1) / (float) m;
     }
-    if verbose == 1:
+    if (verbose == 1){
         printf("Radiator matrix created.");
+    }
 
     float* tempertures; // Create pointer for the temperatures matrix
     tempertures = calloc(m * n, sizeof(float)); // Contigous memory allocation for the temperatures matrix. Intialises memory blocks and sets them to 0
-    if verbose == 1:
+    if( verbose == 1){
         printf("Temperatures matrix created.");
+    }
 
     // Error checking
     if (intial_radiator == NULL || tempertures == NULL){
@@ -90,44 +114,60 @@ void create_radiator(int m, int n){
     }
 }
 
-void cpu_calculation(){
-    // TODO
-    if verbose == 1:
+void cpu_calculation(int m, int n, float* intial_radiator, int iterations){
+    if (verbose == 1){
         printf("CPU calculation started.");
+    }
     // Array initialisation
+    float *previous_radiator, *current_radiator, *tempertures; // pointers for the previous and current radiator matrices
     previous_radiator = calloc(m * n, sizeof(float)); // intialising previous time step of the radiator matrix
     current_radiator = calloc(m * n, sizeof(float)); // intialising current time step of the radiator matrix
+    tempertures = calloc(n, sizeof(float)); // intialising the temperatures array
        
     if (previous_radiator == NULL || current_radiator == NULL || tempertures == NULL){
         printf("Error: Memory allocation failed.");
         exit(1);
     }
     else{
-        if (verbose)  printf("CPU matrix allocation complete.");
+        if (verbose == 1){
+            printf("CPU matrix allocation complete.");
+        }
     }
     // copying the initial parameter radiator matrix to the previous radiator matrix
-    if verbose == 1:
+    if (verbose == 1){
         printf("Copying initial radiator matrix to previous radiator matrix.");
+        }
     memcpy(previous_radiator, intial_radiator, m * n * sizeof(float));
     memcpy(current_radiator, intial_radiator, m * n * sizeof(float));
 
     // CPU calculation and simulation 
-    if verbose == 1:
+    if (verbose == 1){
         printf("Starting CPU calculation and simulation.");
+    }
+
+    for (int i = 0; i < iterations; i++){
+        radiator_weighting(&previous_radiator, &current_radiator, m, n);
+    }
 }
 
 void radiator_weighting(float** previousMatrix, float** nextMatrix, int m, int n){
-    // TODO
     for (int i = 0; i < m; i++){
         for (int j = 0; j < n; j++){
-            (*nextMatrix)[i * n + j] = ( (1.65*(*previousMatrix)[i * rowLength + (j - 2)])+(1.35*(*previousMatrix)[i * rowLength + (j - 1)])+ (*previousMatrix)[i * rowLength + j]+ (0.65*(*previousMatrix)[i * rowLength + ((j + 1) % rowLength)])+(0.35*(*previousMatrix)[i * rowLength + ((j + 2) % rowLength)])) / (float)(5.0);
+            (*nextMatrix)[i * n + j] = ( (1.65*(*previousMatrix)[i * m + (j - 2)])+(1.35*(*previousMatrix)[i * m + (j - 1)])+ (*previousMatrix)[i * m + j]+ (0.65*(*previousMatrix)[i * m + ((j + 1) % m)])+(0.35*(*previousMatrix)[i * m + ((j + 2) % m)])) / (float)(5.0);
         }
     }
-
 }
 
-void main(int argc, char *argv[]){
-    int n = 0, m = 0, verbose = 0, cpu = 0;
-    cli_args(argc, argv, &n, &m, &verbose, &cpu);
-    create_radiator(m, n);
+void row_average(float** matrix, float **array, int m, int n){
+    for (int i = 0; i < m; i++){
+        for (int j = 0; j < n; j++){
+            (*array)[i] += (*matrix)[i * n + j];
+        }
+        (*array)[i] = (*array)[i] / (float)(n);
+    }
 }
+
+// void print_temps{
+//     // TODO
+// }
+
