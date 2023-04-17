@@ -19,7 +19,7 @@ void radiator_weighting(float** previousMatrix, float** nextMatrix, int m, int n
 void row_average(float** matrix, float **array, int m, int n); 
 void print_temps(float **array, int elements, int iterations); 
 
-int n = 32, m = 32, verbose = 0, cpu = 0, iterations = 5, t = 0, print_results = 0;  // Intial variables for command line arguments
+int n = 32, m = 32, verbose = 0, cpu = 0, iterations = 5, t = 0, print_results = 0, gpu_threads = -1;  // Intial variables for command line arguments
 
 /*
 Command line arguments
@@ -31,7 +31,7 @@ void cli_flags(){
     printf("\t -m: Radiator Height\n");
     printf("\t -verbose: Display debug information\n");
     printf("\t -cpu: Complete computation on the CPU\n");
-    printf("\t -gpu: Complete computation on the GPU\n");
+    printf("\t -g: Complete computation on the GPU with specified threads.\n");
     printf("\t -t: Time the simulation\n");
     printf("\t -i: Number of iterations to run the simulation for\n");
     printf("\t -print: Print the temperatures of the radiator at each iteration (large output).\n");
@@ -41,7 +41,7 @@ void cli_flags(){
 Main Function
 */
 void main(int argc, char *argv[]){
-    cli_args(argc, argv, &n, &m, &verbose, &cpu, &print_results); // Handle command line arguments
+    cli_args(argc, argv, &n, &m, &verbose, &cpu, &print_results, &gpu_threads, &iterations); // Handle command line arguments
     float* intial_radiator = create_radiator(m, n);
     if (cpu == 1){
         cpu_calculation(m, n, intial_radiator, iterations);
@@ -52,7 +52,7 @@ void main(int argc, char *argv[]){
 /* 
 Handling of command line arguments
 */
-void cli_args(int argc, char *argv[], int *n, int *m, int *verbose, int *cpu, int *print_results){
+void cli_args(int argc, char *argv[], int *n, int *m, int *verbose, int *cpu, int *print_results, int *gpu_threads, int *iterations){
     int i;
     for(i = 1; i < argc; i++){
         if(strcmp(argv[i], "-h") == 0){
@@ -89,8 +89,8 @@ void cli_args(int argc, char *argv[], int *n, int *m, int *verbose, int *cpu, in
         else if(strcmp(argv[i], "-cpu") == 0){
             *cpu = 1;
         }
-        else if(strcmp(argv[i], "-gpu") == 0){
-            int *gpu = 1;
+        else if(strcmp(argv[i], "-g") == 0){
+            int *gpu_threads = atoi(argv[i+1]);
         }
         else if(strcmp(argv[i], "-t") == 0){
             int *t = 1;
@@ -167,7 +167,7 @@ void cpu_calculation(int m, int n, float* intial_radiator, int iterations){
     // CPU calculation and simulation 
    
     printf("\n------\nStarting CPU calculation and simulation....");
-    
+
     // Looping through the number of iterations
     for (int i = 0; i < iterations; i++){
         radiator_weighting(&previous_radiator, &current_radiator, m, n);
@@ -208,6 +208,25 @@ void print_temps(float **array, int elements, int iterations){
             printf("%f\n", (*array)[i]);
         }
     }
+}
+
+void gpu_execution(){
+    printf("GPU execution started.\n");
+
+    float *results; // Create pointer for the resul
+    results = calloc(m*n, sizeof(float)); // Allocate memory for the radiator matrix
+    if (results == NULL){
+        printf("Error: Memory allocation failed.\n");
+        exit(1);
+    }
+    else{
+        if (verbose == 1){
+        printf("GPU matrix allocation complete.\n");
+        }
+    }
+
+    // GPU execution
+
 }
 
 
