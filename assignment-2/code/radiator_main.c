@@ -12,7 +12,7 @@ Date of last major update: 13/04/2023
 
 // Function prototypes
 void cli_flags();
-void cli_args(int argc, char *argv[], int *n, int *m, int *verbose, int *cpu, int *print_results); 
+void cli_args(int argc, char *argv[], int *n, int *m, int *verbose, int *cpu, int *print_results, int *gpu_threads, int *iterations); 
 float* create_radiator(int m, int n);
 void cpu_calculation(int m, int n, float* intial_radiator, int iterations);
 void radiator_weighting(float** previousMatrix, float** nextMatrix, int m, int n);
@@ -96,7 +96,7 @@ void cli_args(int argc, char *argv[], int *n, int *m, int *verbose, int *cpu, in
             int *t = 1;
         }
         else if(strcmp(argv[i], "-i") == 0){
-            int *iterations = atoi(argv[i+1]);
+            *iterations = atoi(argv[i+1]);
         }
     }
 }
@@ -105,9 +105,9 @@ void cli_args(int argc, char *argv[], int *n, int *m, int *verbose, int *cpu, in
 Creating the radiator matrix given m and n values
 */
 float* create_radiator(int m, int n){
-    if (verbose == 1){
-        printf("Creating radiator matrix of size %d x %d\n", m, n);
-    }
+    printf("------\n");
+    printf("Creating radiator matrix of size %d x %d\n", m, n);
+    printf("...and simulating for %d iterations.\n", iterations);
 
     int i, j;
     float* intial_radiator;
@@ -181,7 +181,8 @@ void cpu_calculation(int m, int n, float* intial_radiator, int iterations){
     printf("\nDone!\n");
     clock_t end = clock(); // End clock
     double time_spent = (double)(end - begin) / CLOCKS_PER_SEC; // Calculate time taken
-    printf("CPU calculation and simulation completed in %f seconds.\n------ ", time_spent);
+    if (time == 1);
+        printf("CPU calculation and simulation completed in %f seconds.\n------\n", time_spent);
 }
 
 void radiator_weighting(float** previousMatrix, float** nextMatrix, int m, int n){
