@@ -120,4 +120,60 @@ __host__ extern radiator_gpu(){
     cudaMalloc((void**)&currentRadiator_gpu, sizeof(float) * m * n); // Allocate memory for the current radiator
     cudaMalloc((void**)&passedRadiator_gpu, sizeof(float) * m * n); // Allocate memory for the passed radiator
     CUDA_errorcheck(); // Check for errors
+    cudaDeviceSynchronize(); // Sync the threads
+
+    if (timing) {
+        cudaEventRecord(stop, 0); // Stop the timer
+        cudaEventSynchronize(stop); // Sync the threads
+        cudaEventElapsedTime(&time, start, stop); // Get the elapsed time
+        printf("Time to allocate memory for GPU arrays: %f ms") 
+    }
+
+    // Copy the data from the CPU to the GPU
+    cudaEventRecord(start, 0); // Start the timer
+
+    cudaMemcpy(currentRadiator_gpu, currentRadiator, sizeof(float) * m * n, cudaMemcpyHostToDevice); // Copy the current radiator to the GPU
+    cudaMemcpy(passedRadiator_gpu, passedRadiator, sizeof(float) * m * n, cudaMemcpyHostToDevice); // Copy the passed radiator to the GPU
+    CUDA_errorcheck(); // Check for errors
+    cudaDeviceSynchronize(); // Sync the threads
+
+    if (timing) {
+        cudaEventRecord(stop, 0); // Stop the timer
+        cudaEventSynchronize(stop); // Sync the threads
+        cudaEventElapsedTime(&time, start, stop); // Get the elapsed time
+        printf("Time to copy data from CPU to GPU: %f ms") 
+    }
+
+    // GPU Block and Grid Configuration
+    if (verbose = 1){
+        printf("Configuring GPU Blocks and Grids!")
+    }
+    dim3 dimBlock(threads) // Number of threads per block
+    dim3 dimGrid((m/threads) + 1) // Number of blocks per grid
+
+    if (verbose = 1){
+        printf("dimBlock: %d, dimGrid: %d", dimBlock, dimGrid)
+    }
+    CUDA_errorcheck(); // Check for errors
+    cudaDeviceSynchronize(); // Sync the threads
+
+    // Run the simulation
+    if (verbose = 1){
+        printf("Running the simulation!")
+    }
+    if (timing = 1){
+        cudaEventRecord(runtime_start, 0); // Start the timer
+    }
+    // iterate through the number of iterations
+    for (int i = 0; i < iterations; i++)
+    {
+        radiator_sim<<<dimGrid, dimBlock>>>(currentRadiator_gpu, passedRadiator_gpu, n, m, iterations); // Run the simulation
+        CUDA_errorcheck(); // Check for errors
+        cudaDeviceSynchronize(); // Sync the threads
+
+        // Swap the arrays
+        float *temp = currentRadiator_gpu;
+        currentRadiator_gpu = passedRadiator_gpu;
+        passedRadiator_gpu = temp;
+    }
 }
