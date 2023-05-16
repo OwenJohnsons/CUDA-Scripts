@@ -9,17 +9,18 @@ Date of last major update: 13/04/2023
 #include <string.h>
 #include <math.h>
 #include <time.h>
+#include <CUDA_functions.h>
 
 // Function prototypes
 void cli_flags();
-void cli_args(int argc, char *argv[], int *n, int *m, int *verbose, int *cpu, int *print_results, int *gpu_threads, int *iterations); 
+void cli_args(int argc, char *argv[], int *n, int *m, int *verbose, int *cpu, int *print_results, int *gpu_threads, int *iterations, int *M_iterations); 
 float* create_radiator(int m, int n);
 void cpu_calculation(int m, int n, float* intial_radiator, int iterations);
 void radiator_weighting(float** previousMatrix, float** nextMatrix, int m, int n);
 void row_average(float** matrix, float **array, int m, int n); 
 void print_temps(float **array, int elements, int iterations); 
 
-int n = 32, m = 32, verbose = 0, cpu = 0, iterations = 5, t = 0, print_results = 0, gpu_threads = -1;  // Intial variables for command line arguments
+int n = 32, m = 32, verbose = 0, cpu = 0, iterations = 5, t = 0, print_results = 0, gpu_threads = -1, M_iterations = 0;  // Intial variables for command line arguments
 
 /*
 Command line arguments
@@ -34,6 +35,7 @@ void cli_flags(){
     printf("\t -g: Complete computation on the GPU with specified threads.\n");
     printf("\t -t: Time the simulation\n");
     printf("\t -i: Number of iterations to run the simulation for\n");
+    printf("\t -a: Every N iterations, print the average temperature of the radiator\n");
     printf("\t -print: Print the temperatures of the radiator at each iteration (large output).\n");
 }
 
@@ -41,7 +43,7 @@ void cli_flags(){
 Main Function
 */
 void main(int argc, char *argv[]){
-    cli_args(argc, argv, &n, &m, &verbose, &cpu, &print_results, &gpu_threads, &iterations); // Handle command line arguments
+    cli_args(argc, argv, &n, &m, &verbose, &cpu, &print_results, &gpu_threads, &iterations, &M_iterations); // Handle command line arguments
     float* intial_radiator = create_radiator(m, n);
     if (cpu == 1){
         cpu_calculation(m, n, intial_radiator, iterations);
@@ -52,7 +54,7 @@ void main(int argc, char *argv[]){
 /* 
 Handling of command line arguments
 */
-void cli_args(int argc, char *argv[], int *n, int *m, int *verbose, int *cpu, int *print_results, int *gpu_threads, int *iterations){
+void cli_args(int argc, char *argv[], int *n, int *m, int *verbose, int *cpu, int *print_results, int *gpu_threads, int *iterations, int *M_iterations){
     int i;
     for(i = 1; i < argc; i++){
         if(strcmp(argv[i], "-h") == 0){
@@ -98,7 +100,15 @@ void cli_args(int argc, char *argv[], int *n, int *m, int *verbose, int *cpu, in
         else if(strcmp(argv[i], "-i") == 0){
             *iterations = atoi(argv[i+1]);
         }
+        else if(strcmp(argv[i], "-a") == 0){
+            int *M_iterations = atoi(argv[i+1]);
+        }
+        else{
+            printf("Error: Invalid command line argument.\n");
+            exit(1);
+        }
     }
+    return 0;
 }
 
 /*
@@ -211,7 +221,7 @@ void print_temps(float **array, int elements, int iterations){
     }
 }
 
-void gpu_execution(){
+void gpu_execution(tempertures, intial_radiator,  n,  m,  iterations,  gpu_threads, t,  verbose,  M_iterations){
     printf("GPU execution started.\n");
 
     float *results; // Create pointer for the resul
@@ -227,6 +237,13 @@ void gpu_execution(){
     }
 
     // GPU execution
+    if (radiator_gpu(tempertures,  results,  intial_radiator,  n,  m,  iterations,  gpu_threads, t,  verbose,  M_iterations) > 0){
+        printf("Error: GPU execution failed.\n");
+        exit(1);
+    }
+    else{
+        printf("GPU execution complete.\n");
+    }
 
 }
 

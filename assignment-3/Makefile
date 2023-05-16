@@ -10,7 +10,7 @@ EXEC=exponentialIntegral.out
 
 all: $(TARGET)
 #	$(CC) -Wall -o ${EXEC} ${TARGET}
-	$(CC) -Wall -o ${EXEC} ${TARGET} -lefence
+	$(CC) -Wall -o ${EXEC} ${TARGET}
 	
 
 %.o: %.cpp Makefile

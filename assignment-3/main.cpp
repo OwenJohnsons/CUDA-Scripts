@@ -114,7 +114,7 @@ int main(int argc, char *argv[]) {
 	return 0;
 }
 
-void	outputResultsCpu				(const std::vector< std::vector< float  > > &resultsFloatCpu, const std::vector< std::vector< double > > &resultsDoubleCpu) {
+void outputResultsCpu(const std::vector< std::vector< float  > > &resultsFloatCpu, const std::vector< std::vector< double > > &resultsDoubleCpu) {
 	unsigned int ui,uj;
 	double x,division=(b-a)/((double)(numberOfSamples));
 
