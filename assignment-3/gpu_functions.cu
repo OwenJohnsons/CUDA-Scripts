@@ -4,7 +4,6 @@
 
 __device__ double expint(double x) {
     // Implementation of the exponential integral function
-    // Modify this function if you have a specific implementation
     return exp(x) / x;
 }
 
